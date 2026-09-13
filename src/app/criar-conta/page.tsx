@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const EMAIL_DOMAINS = [
   "gmail.com",
@@ -25,11 +26,15 @@ export default function CriarContaPage() {
   const [emailFocused, setEmailFocused] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [slowServer, setSlowServer] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
+
+  const slowTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // ── força da senha ─────────────────────────────────────────
   const strength = useMemo(() => {
-    if (!password) return { level: 0, label: "", color: "#e5e5e7" };
+    if (!password) return { level: 0, label: "", color: "hsl(var(--border))" };
 
     let score = 0;
     if (password.length >= 6) score++;
@@ -43,11 +48,9 @@ export default function CriarContaPage() {
     return { level: 4, label: "Forte", color: "#22c55e" };
   }, [password]);
 
-  // ── nome válido? (2+ palavras) ────────────────────────────
   const nameValid =
     name.trim().split(/\s+/).length >= 2 && /^[a-zA-ZÀ-ÿ\s'-]+$/.test(name);
 
-  // ── sugestões de domínio ──────────────────────────────────
   const emailSuggestions = useMemo(() => {
     if (!email) return [];
     const atIndex = email.indexOf("@");
@@ -56,8 +59,6 @@ export default function CriarContaPage() {
     const local = email.slice(0, atIndex);
     const typedDomain = email.slice(atIndex + 1).toLowerCase();
     if (!local) return [];
-
-    // se já tem domínio completo (com ponto), não sugere
     if (typedDomain.includes(".") && typedDomain.length > 3) return [];
 
     return EMAIL_DOMAINS.filter((d) => d.startsWith(typedDomain)).slice(0, 4);
@@ -75,14 +76,11 @@ export default function CriarContaPage() {
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   }
 
-  function handlePhoneChange(value: string) {
-    setPhone(formatPhone(value));
-  }
-
   // ── submissão ─────────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setWarning(null);
 
     if (!nameValid) {
       setError("Digite nome e sobrenome");
@@ -94,8 +92,15 @@ export default function CriarContaPage() {
     }
 
     setLoading(true);
+    setSlowServer(false);
+
+    // timer: se em 8s não respondeu, é o Render acordando
+    slowTimerRef.current = setTimeout(() => setSlowServer(true), 8000);
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000);
+
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -105,21 +110,68 @@ export default function CriarContaPage() {
           phone: phone.replace(/\D/g, ""),
           password,
           confirmPassword: confirm
-        })
+        }),
+        signal: controller.signal
       });
 
-      const data = await res.json();
+      clearTimeout(timeoutId);
 
-      if (!res.ok) {
-        setError(data.error || "Erro ao criar conta");
+      // ── lê a resposta ─────────────────────────────────────
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch {
+        setError("Resposta inválida do servidor. Tente novamente.");
         return;
       }
 
+      // ── erro HTTP ─────────────────────────────────────────
+      if (!res.ok) {
+        const realError = data.error || "Erro ao criar conta";
+
+        if (data.detail && process.env.NODE_ENV !== "production") {
+          setError(`${realError} (${data.detail})`);
+        } else {
+          setError(realError);
+        }
+        return;
+      }
+
+      // ── sucesso, mas e-mail falhou? ───────────────────────
+      if (data.emailSent === false) {
+        // cadastro criou, mas e-mail deu problema
+        setWarning(
+          `Conta criada, mas o e-mail não pôde ser enviado. ${
+            data.emailError ? `Motivo: ${data.emailError}` : ""
+          }`
+        );
+        // espera 4s pra o usuário ler antes de redirecionar
+        setTimeout(() => {
+          router.push(`/verificar?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+        }, 4000);
+        return;
+      }
+
+      // ── tudo ok ───────────────────────────────────────────
       router.push(`/verificar?email=${encodeURIComponent(email.trim().toLowerCase())}`);
-    } catch {
-      setError("Erro de conexão. Tente novamente.");
+    } catch (err: unknown) {
+      const e = err as { name?: string; message?: string };
+
+      if (e.name === "AbortError") {
+        setError(
+          "Tempo esgotado. O servidor está demorando. Aguarde 30s e tente novamente."
+        );
+      } else if (e.message?.includes("Failed to fetch")) {
+        setError(
+          "Não foi possível conectar. Verifique sua internet e tente novamente."
+        );
+      } else {
+        setError(`Erro inesperado: ${e.message || "desconhecido"}`);
+      }
     } finally {
+      if (slowTimerRef.current) clearTimeout(slowTimerRef.current);
       setLoading(false);
+      setSlowServer(false);
     }
   }
 
@@ -132,7 +184,7 @@ export default function CriarContaPage() {
         justifyContent: "center",
         padding: "32px 16px",
         background:
-          "radial-gradient(ellipse at top, rgba(124,58,237,0.08) 0%, #fafafa 40%, #ffffff 100%)",
+          "radial-gradient(ellipse at top, hsl(var(--primary) / 0.08) 0%, hsl(var(--background)) 45%, hsl(var(--background)) 100%)",
         position: "relative",
         overflow: "hidden"
       }}
@@ -147,11 +199,23 @@ export default function CriarContaPage() {
           width: "600px",
           height: "400px",
           background:
-            "radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)",
+            "radial-gradient(ellipse, hsl(var(--primary) / 0.15) 0%, transparent 70%)",
           filter: "blur(60px)",
           pointerEvents: "none"
         }}
       />
+
+      {/* toggle no canto */}
+      <div
+        style={{
+          position: "absolute",
+          top: "20px",
+          right: "20px",
+          zIndex: 10
+        }}
+      >
+        <ThemeToggle />
+      </div>
 
       <div
         className="animate-fade-up"
@@ -171,19 +235,20 @@ export default function CriarContaPage() {
         >
           <div
             style={{
-              width: "34px",
-              height: "34px",
-              borderRadius: "10px",
-              background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
-              boxShadow: "0 4px 12px rgba(124,58,237,0.25)"
+              width: "36px",
+              height: "36px",
+              borderRadius: "11px",
+              background:
+                "linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%)",
+              boxShadow: "0 6px 18px rgba(124,58,237,0.3)"
             }}
           />
           <span
             style={{
               fontSize: "18px",
               fontWeight: 700,
-              color: "#18181b",
-              letterSpacing: "-0.02em"
+              color: "hsl(var(--foreground))",
+              letterSpacing: "-0.025em"
             }}
           >
             Fofoca Store
@@ -194,19 +259,19 @@ export default function CriarContaPage() {
         <div
           className="animate-scale-in"
           style={{
-            background: "#ffffff",
-            border: "1px solid #e5e5e7",
+            background: "hsl(var(--card))",
+            border: "1px solid hsl(var(--border))",
             borderRadius: "20px",
             padding: "36px 28px",
             boxShadow:
-              "0 1px 3px rgba(0,0,0,0.04), 0 12px 32px rgba(124,58,237,0.06)"
+              "0 1px 3px rgba(0,0,0,0.04), 0 16px 40px hsl(var(--primary) / 0.08)"
           }}
         >
           <h1
             style={{
               fontSize: "26px",
               fontWeight: 800,
-              color: "#18181b",
+              color: "hsl(var(--foreground))",
               margin: "0 0 8px 0",
               letterSpacing: "-0.025em"
             }}
@@ -216,7 +281,7 @@ export default function CriarContaPage() {
           <p
             style={{
               fontSize: "14px",
-              color: "#71717a",
+              color: "hsl(var(--muted-foreground))",
               margin: "0 0 28px 0"
             }}
           >
@@ -246,9 +311,20 @@ export default function CriarContaPage() {
               margin: "24px 0"
             }}
           >
-            <div style={{ flex: 1, height: 1, background: "#e5e5e7" }} />
-            <span style={{ fontSize: "12px", color: "#a1a1aa" }}>ou</span>
-            <div style={{ flex: 1, height: 1, background: "#e5e5e7" }} />
+            <div
+              style={{ flex: 1, height: 1, background: "hsl(var(--border))" }}
+            />
+            <span
+              style={{
+                fontSize: "12px",
+                color: "hsl(var(--muted-foreground))"
+              }}
+            >
+              ou
+            </span>
+            <div
+              style={{ flex: 1, height: 1, background: "hsl(var(--border))" }}
+            />
           </div>
 
           <form
@@ -268,8 +344,7 @@ export default function CriarContaPage() {
                 autoComplete="name"
                 className="input-base"
                 style={{
-                  borderColor:
-                    name && !nameValid ? "#ef4444" : undefined
+                  borderColor: name && !nameValid ? "#ef4444" : undefined
                 }}
               />
             </Field>
@@ -288,7 +363,6 @@ export default function CriarContaPage() {
                   className="input-base"
                 />
 
-                {/* sugestões de domínio */}
                 {emailFocused && emailSuggestions.length > 0 && (
                   <div
                     className="animate-fade-in"
@@ -297,10 +371,10 @@ export default function CriarContaPage() {
                       top: "calc(100% + 6px)",
                       left: 0,
                       right: 0,
-                      background: "#ffffff",
-                      border: "1px solid #e5e5e7",
+                      background: "hsl(var(--card))",
+                      border: "1px solid hsl(var(--border))",
                       borderRadius: "12px",
-                      boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                      boxShadow: "0 12px 32px rgba(0,0,0,0.12)",
                       padding: "6px",
                       zIndex: 10,
                       overflow: "hidden"
@@ -327,13 +401,13 @@ export default function CriarContaPage() {
                             padding: "10px 12px",
                             borderRadius: "8px",
                             fontSize: "14px",
-                            color: "#18181b",
+                            color: "hsl(var(--foreground))",
                             cursor: "pointer",
-                            fontFamily: "inherit",
-                            transition: "background 0.15s ease"
+                            fontFamily: "inherit"
                           }}
                           onMouseEnter={(e) =>
-                            (e.currentTarget.style.background = "#f4f4f5")
+                            (e.currentTarget.style.background =
+                              "hsl(var(--muted))")
                           }
                           onMouseLeave={(e) =>
                             (e.currentTarget.style.background = "transparent")
@@ -352,7 +426,7 @@ export default function CriarContaPage() {
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
+                onChange={(e) => setPhone(formatPhone(e.target.value))}
                 placeholder="(11) 99999-9999"
                 required
                 autoComplete="tel"
@@ -386,7 +460,7 @@ export default function CriarContaPage() {
                     border: "none",
                     cursor: "pointer",
                     padding: "4px",
-                    color: "#71717a",
+                    color: "hsl(var(--muted-foreground))",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center"
@@ -399,11 +473,7 @@ export default function CriarContaPage() {
               {password && (
                 <div style={{ marginTop: "10px" }}>
                   <div
-                    style={{
-                      display: "flex",
-                      gap: "4px",
-                      marginBottom: "6px"
-                    }}
+                    style={{ display: "flex", gap: "4px", marginBottom: "6px" }}
                   >
                     {[1, 2, 3, 4].map((n) => (
                       <div
@@ -413,7 +483,9 @@ export default function CriarContaPage() {
                           height: "4px",
                           borderRadius: "999px",
                           background:
-                            n <= strength.level ? strength.color : "#e5e5e7",
+                            n <= strength.level
+                              ? strength.color
+                              : "hsl(var(--border))",
                           transition: "background 0.25s ease"
                         }}
                       />
@@ -455,6 +527,46 @@ export default function CriarContaPage() {
               />
             </Field>
 
+            {/* aviso de lentidão */}
+            {slowServer && loading && (
+              <div
+                className="animate-fade-in"
+                style={{
+                  background: "hsl(var(--primary) / 0.08)",
+                  border: "1px solid hsl(var(--primary) / 0.2)",
+                  color: "hsl(var(--primary))",
+                  fontSize: "13px",
+                  padding: "11px 14px",
+                  borderRadius: "10px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px"
+                }}
+              >
+                <SpinnerIcon />
+                Acordando o servidor... isso pode levar até 30 segundos.
+              </div>
+            )}
+
+            {/* aviso de e-mail falhou */}
+            {warning && (
+              <div
+                className="animate-fade-in"
+                style={{
+                  background: "#fefce8",
+                  border: "1px solid #fde68a",
+                  color: "#a16207",
+                  fontSize: "13.5px",
+                  padding: "12px 14px",
+                  borderRadius: "10px",
+                  lineHeight: 1.5
+                }}
+              >
+                {warning}
+              </div>
+            )}
+
+            {/* erro real */}
             {error && (
               <div
                 className="animate-fade-in"
@@ -463,8 +575,9 @@ export default function CriarContaPage() {
                   border: "1px solid #fecaca",
                   color: "#b91c1c",
                   fontSize: "13.5px",
-                  padding: "11px 14px",
-                  borderRadius: "10px"
+                  padding: "12px 14px",
+                  borderRadius: "10px",
+                  lineHeight: 1.5
                 }}
               >
                 {error}
@@ -474,23 +587,12 @@ export default function CriarContaPage() {
             <button
               type="submit"
               disabled={loading}
-              className="hover-lift"
+              className="btn-primary"
               style={{
-                background: loading
-                  ? "#a78bfa"
-                  : "linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)",
-                color: "#ffffff",
-                border: "none",
-                padding: "15px 24px",
-                borderRadius: "12px",
-                fontSize: "15.5px",
-                fontWeight: 600,
-                cursor: loading ? "not-allowed" : "pointer",
+                width: "100%",
                 marginTop: "4px",
-                fontFamily: "inherit",
-                boxShadow: loading
-                  ? "none"
-                  : "0 6px 18px rgba(124,58,237,0.28)"
+                padding: "15px 24px",
+                fontSize: "15.5px"
               }}
             >
               {loading ? "Criando conta..." : "Criar conta"}
@@ -500,7 +602,7 @@ export default function CriarContaPage() {
           <p
             style={{
               fontSize: "13.5px",
-              color: "#71717a",
+              color: "hsl(var(--muted-foreground))",
               textAlign: "center",
               marginTop: "24px",
               marginBottom: 0
@@ -510,7 +612,7 @@ export default function CriarContaPage() {
             <Link
               href="/entrar"
               style={{
-                color: "#7c3aed",
+                color: "hsl(var(--primary))",
                 fontWeight: 600,
                 textDecoration: "none"
               }}
@@ -544,7 +646,7 @@ function Field({
           display: "block",
           fontSize: "13px",
           fontWeight: 600,
-          color: "#3f3f46",
+          color: "hsl(var(--foreground))",
           marginBottom: "6px"
         }}
       >
@@ -581,21 +683,29 @@ function SocialButton({
     <button
       type="button"
       onClick={onClick}
-      className="hover-lift"
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         gap: "10px",
-        background: "#ffffff",
-        border: "1px solid #e5e5e7",
+        background: "hsl(var(--background))",
+        border: "1px solid hsl(var(--border))",
         borderRadius: "11px",
         padding: "13px 16px",
         fontSize: "14px",
         fontWeight: 600,
-        color: "#18181b",
+        color: "hsl(var(--foreground))",
         cursor: "pointer",
-        fontFamily: "inherit"
+        fontFamily: "inherit",
+        transition: "border-color 0.2s ease, transform 0.2s ease"
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "hsl(var(--primary))";
+        e.currentTarget.style.transform = "translateY(-1px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "hsl(var(--border))";
+        e.currentTarget.style.transform = "translateY(0)";
       }}
     >
       {icon}
@@ -646,6 +756,25 @@ function EyeOffIcon() {
   );
 }
 
+function SpinnerIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ animation: "spin 1s linear infinite", flexShrink: 0 }}
+    >
+      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </svg>
+  );
+}
+
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 48 48">
@@ -671,7 +800,7 @@ function GoogleIcon() {
 
 function AppleIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="#000000">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
       <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
     </svg>
   );
