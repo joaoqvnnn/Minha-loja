@@ -6,14 +6,22 @@ export const signupSchema = z
       .string()
       .trim()
       .min(3, "Nome precisa ter pelo menos 3 letras")
-      .max(80, "Nome muito longo"),
+      .max(80, "Nome muito longo")
+      .refine(
+        (value) => value.trim().split(/\s+/).length >= 2,
+        "Digite nome e sobrenome"
+      )
+      .refine(
+        (value) => /^[a-zA-ZÀ-ÿ\s'-]+$/.test(value),
+        "Nome só pode conter letras"
+      ),
 
     email: z.string().trim().toLowerCase().email("E-mail inválido"),
 
     phone: z
       .string()
       .trim()
-      .regex(/^\d{10,11}$/, "Telefone deve ter 10 ou 11 dígitos (só números)"),
+      .regex(/^\d{10,11}$/, "Telefone inválido"),
 
     password: z
       .string()
