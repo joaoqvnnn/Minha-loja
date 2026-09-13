@@ -1,412 +1,79 @@
 import Link from "next/link";
+import Header from "@/components/Header";
+import Hero from "@/components/Hero";
+import Footer from "@/components/Footer";
 
 export default function HomePage() {
   return (
-    <main style={{ minHeight: "100vh", position: "relative" }}>
+    <main style={{ minHeight: "100vh" }}>
+      <Header />
 
-      {/* ═══ HEADER ═══════════════════════════════════════ */}
-      <header
-        className="animate-fade-in"
-        style={{
-          borderBottom: "1px solid #e5e5e7",
-          background: "rgba(255,255,255,0.85)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          position: "sticky",
-          top: 0,
-          zIndex: 50
-        }}
-      >
-        <div
-          className="container-page"
-          style={{
-            display: "flex",
-            height: "68px",
-            alignItems: "center",
-            justifyContent: "space-between"
-          }}
-        >
-          <Link
-            href="/"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              textDecoration: "none"
-            }}
-          >
-            <div
-              style={{
-                width: "34px",
-                height: "34px",
-                borderRadius: "10px",
-                background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
-                boxShadow: "0 4px 12px rgba(124,58,237,0.25)"
-              }}
-            />
-            <span
-              style={{
-                fontSize: "18px",
-                fontWeight: 700,
-                color: "#18181b",
-                letterSpacing: "-0.02em"
-              }}
-            >
-              Fofoca Store
-            </span>
-          </Link>
+      <Hero />
 
-          <nav
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "28px",
-              fontSize: "14px"
-            }}
-          >
-            <Link
-              href="/produtos"
-              style={{
-                color: "#52525b",
-                textDecoration: "none",
-                fontWeight: 500,
-                transition: "color 0.2s ease"
-              }}
-            >
-              Produtos
-            </Link>
-            <Link
-              href="/categorias"
-              style={{
-                color: "#52525b",
-                textDecoration: "none",
-                fontWeight: 500,
-                transition: "color 0.2s ease"
-              }}
-            >
-              Categorias
-            </Link>
-            <Link
-              href="/ofertas"
-              style={{
-                color: "#52525b",
-                textDecoration: "none",
-                fontWeight: 500,
-                transition: "color 0.2s ease"
-              }}
-            >
-              Ofertas
-            </Link>
-          </nav>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <Link
-              href="/entrar"
-              style={{
-                fontSize: "14px",
-                fontWeight: 600,
-                color: "#52525b",
-                textDecoration: "none"
-              }}
-            >
-              Entrar
-            </Link>
-            <Link
-              href="/criar-conta"
-              className="hover-lift"
-              style={{
-                background: "linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)",
-                color: "#ffffff",
-                padding: "10px 18px",
-                borderRadius: "10px",
-                fontSize: "14px",
-                fontWeight: 600,
-                textDecoration: "none",
-                boxShadow: "0 4px 14px rgba(124,58,237,0.25)"
-              }}
-            >
-              Criar conta
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      {/* ═══ HERO ═════════════════════════════════════════ */}
+      {/* ═══ BENEFÍCIOS ═══════════════════════════════════ */}
       <section
         style={{
-          position: "relative",
-          overflow: "hidden",
-          padding: "120px 0 140px 0"
+          borderTop: "1px solid hsl(var(--border))",
+          padding: "80px 0"
         }}
       >
         <div className="container-page">
-          <div
-            style={{
-              maxWidth: "840px",
-              margin: "0 auto",
-              textAlign: "center"
-            }}
-          >
-            <div
-              className="animate-fade-up"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                background: "rgba(124,58,237,0.08)",
-                border: "1px solid rgba(124,58,237,0.18)",
-                borderRadius: "999px",
-                padding: "6px 14px",
-                fontSize: "13px",
-                fontWeight: 500,
-                color: "#7c3aed",
-                marginBottom: "28px"
-              }}
-            >
-              <span
-                className="animate-float"
-                style={{
-                  width: "7px",
-                  height: "7px",
-                  borderRadius: "999px",
-                  background: "#7c3aed",
-                  boxShadow: "0 0 12px rgba(124,58,237,0.6)"
-                }}
-              />
-              Entrega automática e instantânea
-            </div>
-
-            <h1
-              className="animate-fade-up delay-100"
-              style={{
-                fontSize: "clamp(38px, 7vw, 68px)",
-                fontWeight: 800,
-                lineHeight: 1.05,
-                letterSpacing: "-0.035em",
-                margin: 0,
-                color: "#18181b"
-              }}
-            >
-              A plataforma para encontrar seus{" "}
-              <span
-                style={{
-                  background:
-                    "linear-gradient(135deg, #7c3aed 0%, #a855f7 60%, #ec4899 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text"
-                }}
-              >
-                produtos digitais
-              </span>
-            </h1>
-
-            <p
-              className="animate-fade-up delay-200"
-              style={{
-                marginTop: "28px",
-                fontSize: "18px",
-                color: "#52525b",
-                lineHeight: 1.65,
-                maxWidth: "640px",
-                marginLeft: "auto",
-                marginRight: "auto"
-              }}
-            >
-              Streaming, jogos, gift cards, softwares e licenças —
-              tudo em um só lugar, com pagamento seguro e entrega imediata.
+          <div className="section-header">
+            <h2 className="section-title animate-fade-up">
+              Por que escolher a gente
+            </h2>
+            <p className="section-subtitle animate-fade-up delay-100">
+              Tudo o que você precisa pra comprar produtos digitais com
+              segurança.
             </p>
-
-            <div
-              className="animate-fade-up delay-300"
-              style={{
-                marginTop: "40px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "14px",
-                alignItems: "center"
-              }}
-            >
-              <Link
-                href="/produtos"
-                className="hover-lift"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                  background: "linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)",
-                  color: "#ffffff",
-                  padding: "16px 32px",
-                  borderRadius: "12px",
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  width: "100%",
-                  maxWidth: "300px",
-                  boxShadow: "0 8px 24px rgba(124,58,237,0.28)"
-                }}
-              >
-                Explorar produtos
-                <ArrowRightIcon />
-              </Link>
-              <Link
-                href="/criar-conta"
-                className="hover-lift"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "#ffffff",
-                  color: "#18181b",
-                  padding: "16px 32px",
-                  borderRadius: "12px",
-                  border: "1px solid #e5e5e7",
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  textDecoration: "none",
-                  width: "100%",
-                  maxWidth: "300px"
-                }}
-              >
-                Começar agora
-              </Link>
-            </div>
           </div>
-        </div>
 
-        {/* glow fundo */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: -1,
-            overflow: "hidden",
-            pointerEvents: "none"
-          }}
-        >
-          <div
-            className="animate-glow"
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "10%",
-              transform: "translateX(-50%)",
-              width: "800px",
-              height: "400px",
-              background:
-                "radial-gradient(ellipse at center, rgba(124,58,237,0.22) 0%, rgba(168,85,247,0.08) 40%, transparent 70%)",
-              filter: "blur(60px)",
-              borderRadius: "999px"
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              left: "10%",
-              top: "40%",
-              width: "300px",
-              height: "300px",
-              background:
-                "radial-gradient(circle, rgba(236,72,153,0.12) 0%, transparent 70%)",
-              filter: "blur(80px)",
-              borderRadius: "999px"
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              right: "5%",
-              top: "20%",
-              width: "320px",
-              height: "320px",
-              background:
-                "radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)",
-              filter: "blur(80px)",
-              borderRadius: "999px"
-            }}
-          />
-        </div>
-      </section>
-
-      {/* ═══ BENEFÍCIOS ═══════════════════════════════════ */}
-      <section style={{ borderTop: "1px solid #f4f4f5" }}>
-        <div className="container-page" style={{ padding: "80px 16px" }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-              gap: "32px"
-            }}
-          >
+          <div className="cards-3">
             <Feature
               icon={<BoltIcon />}
               title="Entrega instantânea"
-              desc="Receba seu produto logo após a confirmação do pagamento."
+              desc="Receba seu produto logo após a confirmação do pagamento — sem espera, sem burocracia."
               delay="0ms"
             />
             <Feature
               icon={<ShieldIcon />}
               title="Pagamento seguro"
-              desc="Processado pelo Mercado Pago com criptografia de ponta."
-              delay="100ms"
+              desc="Processado pelo Mercado Pago com criptografia de ponta a ponta e antifraude."
+              delay="120ms"
             />
             <Feature
               icon={<SupportIcon />}
-              title="Suporte real"
-              desc="Atendimento humano sempre que você precisar."
-              delay="200ms"
+              title="Suporte humano"
+              desc="Atendimento real sempre que você precisar. Sem robôs, sem enrolação."
+              delay="240ms"
             />
           </div>
         </div>
       </section>
 
       {/* ═══ COMO FUNCIONA ════════════════════════════════ */}
-      <section style={{ borderTop: "1px solid #f4f4f5", background: "#fafafa" }}>
-        <div className="container-page" style={{ padding: "100px 16px" }}>
-          <div
-            style={{
-              textAlign: "center",
-              maxWidth: "640px",
-              margin: "0 auto 64px auto"
-            }}
-          >
-            <h2
-              className="animate-fade-up"
-              style={{
-                fontSize: "clamp(28px, 4vw, 42px)",
-                fontWeight: 800,
-                letterSpacing: "-0.03em",
-                color: "#18181b",
-                margin: "0 0 16px 0"
-              }}
-            >
+      <section
+        style={{
+          borderTop: "1px solid hsl(var(--border))",
+          background: "hsl(var(--muted))",
+          padding: "100px 0"
+        }}
+      >
+        <div className="container-page">
+          <div className="section-header">
+            <h2 className="section-title animate-fade-up">
               Como funciona
             </h2>
-            <p
-              className="animate-fade-up delay-100"
-              style={{
-                fontSize: "17px",
-                color: "#52525b",
-                lineHeight: 1.6,
-                margin: 0
-              }}
-            >
+            <p className="section-subtitle animate-fade-up delay-100">
               Três passos simples entre você e o seu produto digital.
             </p>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              gap: "24px"
-            }}
-          >
+          <div className="cards-3">
             <Step
               number="01"
               title="Escolha o produto"
-              desc="Navegue pelo catálogo e encontre exatamente o que você procura."
+              desc="Navegue pelo catálogo completo e encontre exatamente o que procura."
               delay="0ms"
             />
             <Step
@@ -418,7 +85,7 @@ export default function HomePage() {
             <Step
               number="03"
               title="Receba na hora"
-              desc="O produto é liberado automaticamente na sua conta após a aprovação."
+              desc="O produto é liberado automaticamente na sua conta após aprovação."
               delay="240ms"
             />
           </div>
@@ -426,30 +93,63 @@ export default function HomePage() {
       </section>
 
       {/* ═══ CTA FINAL ════════════════════════════════════ */}
-      <section style={{ borderTop: "1px solid #f4f4f5" }}>
-        <div className="container-page" style={{ padding: "100px 16px" }}>
+      <section style={{ padding: "100px 0" }}>
+        <div className="container-page">
           <div
-            className="animate-scale-in"
+            className="animate-scale-in cta-box"
             style={{
-              maxWidth: "760px",
+              maxWidth: "820px",
               margin: "0 auto",
               textAlign: "center",
               background:
-                "linear-gradient(135deg, #18181b 0%, #27272a 50%, #3f1f6b 100%)",
-              borderRadius: "24px",
-              padding: "64px 32px",
+                "linear-gradient(135deg, #18181b 0%, #27272a 45%, #3b1f6b 100%)",
+              borderRadius: "28px",
+              padding: "72px 32px",
               position: "relative",
-              overflow: "hidden"
+              overflow: "hidden",
+              boxShadow: "0 24px 60px rgba(124,58,237,0.25)"
             }}
           >
-            <h2
+            {/* brilho decorativo */}
+            <div
               style={{
-                fontSize: "clamp(26px, 4vw, 38px)",
+                position: "absolute",
+                right: "-100px",
+                top: "-100px",
+                width: "320px",
+                height: "320px",
+                background:
+                  "radial-gradient(circle, rgba(168,85,247,0.45) 0%, transparent 70%)",
+                filter: "blur(40px)",
+                borderRadius: "999px",
+                pointerEvents: "none"
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: "-80px",
+                bottom: "-80px",
+                width: "280px",
+                height: "280px",
+                background:
+                  "radial-gradient(circle, rgba(124,58,237,0.35) 0%, transparent 70%)",
+                filter: "blur(40px)",
+                borderRadius: "999px",
+                pointerEvents: "none"
+              }}
+            />
+
+            <h2
+              className="cta-title"
+              style={{
+                fontSize: "clamp(28px, 4.5vw, 42px)",
                 fontWeight: 800,
                 letterSpacing: "-0.03em",
                 color: "#ffffff",
-                margin: "0 0 16px 0",
-                position: "relative"
+                margin: "0 0 18px 0",
+                position: "relative",
+                lineHeight: 1.15
               }}
             >
               Pronto para começar?
@@ -457,9 +157,9 @@ export default function HomePage() {
             <p
               style={{
                 fontSize: "17px",
-                color: "rgba(255,255,255,0.7)",
-                lineHeight: 1.6,
-                margin: "0 auto 32px auto",
+                color: "rgba(255,255,255,0.72)",
+                lineHeight: 1.65,
+                margin: "0 auto 36px auto",
                 maxWidth: "480px",
                 position: "relative"
               }}
@@ -467,88 +167,133 @@ export default function HomePage() {
               Crie sua conta em menos de um minuto e tenha acesso imediato ao
               catálogo completo.
             </p>
-            <Link
-              href="/criar-conta"
-              className="hover-lift"
+
+            <div
+              className="cta-buttons"
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                background: "#ffffff",
-                color: "#18181b",
-                padding: "16px 32px",
-                borderRadius: "12px",
-                fontSize: "16px",
-                fontWeight: 600,
-                textDecoration: "none",
+                display: "flex",
+                gap: "12px",
+                justifyContent: "center",
                 position: "relative"
               }}
             >
-              Criar minha conta
-              <ArrowRightIcon />
-            </Link>
-
-            {/* brilho decorativo */}
-            <div
-              style={{
-                position: "absolute",
-                right: "-80px",
-                top: "-80px",
-                width: "300px",
-                height: "300px",
-                background:
-                  "radial-gradient(circle, rgba(168,85,247,0.35) 0%, transparent 70%)",
-                filter: "blur(40px)",
-                borderRadius: "999px"
-              }}
-            />
+              <Link
+                href="/criar-conta"
+                className="cta-btn-white"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  background: "#ffffff",
+                  color: "#18181b",
+                  padding: "16px 32px",
+                  borderRadius: "12px",
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  transition:
+                    "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease"
+                }}
+              >
+                Criar minha conta
+                <ArrowRightIcon />
+              </Link>
+              <Link
+                href="/produtos"
+                className="cta-btn-ghost"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  color: "#ffffff",
+                  padding: "16px 32px",
+                  borderRadius: "12px",
+                  fontSize: "16px",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  backdropFilter: "blur(8px)",
+                  transition:
+                    "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.25s ease"
+                }}
+              >
+                Ver produtos
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ FOOTER ═══════════════════════════════════════ */}
-      <footer style={{ borderTop: "1px solid #e5e5e7" }}>
-        <div
-          className="container-page"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "20px",
-            padding: "40px 16px",
-            fontSize: "14px",
-            color: "#52525b"
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div
-              style={{
-                width: "24px",
-                height: "24px",
-                borderRadius: "8px",
-                background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)"
-              }}
-            />
-            <span style={{ fontWeight: 600, color: "#18181b" }}>
-              Fofoca Store
-            </span>
-          </div>
-          <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-            <Link href="/termos" style={{ color: "inherit", textDecoration: "none" }}>
-              Termos
-            </Link>
-            <Link href="/privacidade" style={{ color: "inherit", textDecoration: "none" }}>
-              Privacidade
-            </Link>
-            <Link href="/suporte" style={{ color: "inherit", textDecoration: "none" }}>
-              Suporte
-            </Link>
-          </div>
-          <span style={{ fontSize: "13px", color: "#a1a1aa" }}>
-            © 2026 Fofoca Store. Todos os direitos reservados.
-          </span>
-        </div>
-      </footer>
+      <Footer />
+
+      {/* ═══ ESTILOS RESPONSIVOS ═══════════════════════════ */}
+      <style jsx global>{`
+        .section-header {
+          text-align: center;
+          max-width: 640px;
+          margin: 0 auto 56px auto;
+        }
+        .section-title {
+          font-size: 30px;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          color: hsl(var(--foreground));
+          margin: 0 0 14px 0;
+          line-height: 1.15;
+        }
+        .section-subtitle {
+          font-size: 16px;
+          color: hsl(var(--muted-foreground));
+          line-height: 1.6;
+          margin: 0;
+        }
+        .cards-3 {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+        .cta-buttons {
+          flex-direction: column;
+        }
+        .cta-btn-white,
+        .cta-btn-ghost {
+          width: 100%;
+        }
+        .cta-btn-white:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 32px rgba(255, 255, 255, 0.2);
+        }
+        .cta-btn-ghost:hover {
+          transform: translateY(-2px);
+          background: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        @media (min-width: 640px) {
+          .cta-buttons {
+            flex-direction: row;
+          }
+          .cta-btn-white,
+          .cta-btn-ghost {
+            width: auto;
+          }
+        }
+
+        @media (min-width: 768px) {
+          .section-title {
+            font-size: 42px;
+          }
+          .section-subtitle {
+            font-size: 17px;
+          }
+          .cards-3 {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+          }
+        }
+      `}</style>
     </main>
   );
 }
@@ -570,39 +315,37 @@ function Feature({
 }) {
   return (
     <div
-      className="animate-fade-up hover-lift"
+      className="animate-fade-up card-base feature-card"
       style={{
         display: "flex",
         flexDirection: "column",
         gap: "16px",
-        padding: "28px 24px",
-        borderRadius: "16px",
-        border: "1px solid #f4f4f5",
-        background: "#ffffff",
         animationDelay: delay
       }}
     >
       <div
         style={{
-          width: "44px",
-          height: "44px",
-          borderRadius: "12px",
-          background: "linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%)",
+          width: "48px",
+          height: "48px",
+          borderRadius: "13px",
+          background:
+            "linear-gradient(135deg, hsl(var(--primary) / 0.12) 0%, hsl(var(--primary) / 0.06) 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#7c3aed"
+          color: "hsl(var(--primary))",
+          flexShrink: 0
         }}
       >
         {icon}
       </div>
       <h3
         style={{
-          fontSize: "17px",
+          fontSize: "18px",
           fontWeight: 700,
           margin: 0,
-          color: "#18181b",
-          letterSpacing: "-0.01em"
+          color: "hsl(var(--foreground))",
+          letterSpacing: "-0.015em"
         }}
       >
         {title}
@@ -610,9 +353,9 @@ function Feature({
       <p
         style={{
           fontSize: "14.5px",
-          color: "#52525b",
+          color: "hsl(var(--muted-foreground))",
           margin: 0,
-          lineHeight: 1.6
+          lineHeight: 1.65
         }}
       >
         {desc}
@@ -634,25 +377,18 @@ function Step({
 }) {
   return (
     <div
-      className="animate-fade-up"
+      className="animate-fade-up card-base"
       style={{
         padding: "32px 28px",
-        borderRadius: "16px",
-        background: "#ffffff",
-        border: "1px solid #f4f4f5",
         animationDelay: delay
       }}
     >
       <div
+        className="text-gradient-purple"
         style={{
-          fontSize: "36px",
+          fontSize: "40px",
           fontWeight: 800,
           letterSpacing: "-0.04em",
-          background:
-            "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
           marginBottom: "16px",
           lineHeight: 1
         }}
@@ -661,11 +397,11 @@ function Step({
       </div>
       <h3
         style={{
-          fontSize: "18px",
+          fontSize: "19px",
           fontWeight: 700,
           margin: "0 0 10px 0",
-          color: "#18181b",
-          letterSpacing: "-0.01em"
+          color: "hsl(var(--foreground))",
+          letterSpacing: "-0.015em"
         }}
       >
         {title}
@@ -673,7 +409,7 @@ function Step({
       <p
         style={{
           fontSize: "14.5px",
-          color: "#52525b",
+          color: "hsl(var(--muted-foreground))",
           margin: 0,
           lineHeight: 1.65
         }}
@@ -685,7 +421,7 @@ function Step({
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ÍCONES SVG (linha, sem emoji)
+   ÍCONES SVG
    ═══════════════════════════════════════════════════════════════ */
 
 function ArrowRightIcon() {
@@ -709,8 +445,8 @@ function ArrowRightIcon() {
 function BoltIcon() {
   return (
     <svg
-      width="22"
-      height="22"
+      width="24"
+      height="24"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -726,8 +462,8 @@ function BoltIcon() {
 function ShieldIcon() {
   return (
     <svg
-      width="22"
-      height="22"
+      width="24"
+      height="24"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -744,8 +480,8 @@ function ShieldIcon() {
 function SupportIcon() {
   return (
     <svg
-      width="22"
-      height="22"
+      width="24"
+      height="24"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
