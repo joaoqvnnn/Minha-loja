@@ -396,7 +396,8 @@ body {
   background: rgba(255, 255, 255, 0.15) !important;
 }
 
-/* Hero responsivo */
+/* ─── HERO ─────────────────────────────────────────────── */
+
 .hero-section {
   position: relative;
   overflow: hidden;
@@ -419,19 +420,7 @@ body {
   max-width: 300px;
 }
 
-/* Links do footer */
-.footer-link {
-  font-size: 14px;
-  color: hsl(var(--muted-foreground));
-  text-decoration: none;
-  transition: color 0.2s ease, padding-left 0.2s ease;
-  display: inline-block;
-}
-
-.footer-link:hover {
-  color: hsl(var(--primary));
-  padding-left: 4px;
-}
+/* ─── FOOTER ───────────────────────────────────────────── */
 
 .footer-grid {
   display: grid;
@@ -446,7 +435,21 @@ body {
   gap: 18px;
 }
 
-/* Link do header */
+.footer-link {
+  font-size: 14px;
+  color: hsl(var(--muted-foreground));
+  text-decoration: none;
+  transition: color 0.2s ease, padding-left 0.2s ease;
+  display: inline-block;
+}
+
+.footer-link:hover {
+  color: hsl(var(--primary));
+  padding-left: 4px;
+}
+
+/* ─── HEADER ───────────────────────────────────────────── */
+
 .nav-link {
   position: relative;
   padding: 8px 14px;
@@ -489,6 +492,10 @@ body {
   transform: rotate(-8deg) scale(1.05);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   MEDIA QUERIES GERAIS
+   ═══════════════════════════════════════════════════════════════ */
+
 @media (min-width: 640px) {
   .hero-buttons {
     flex-direction: row;
@@ -528,6 +535,10 @@ body {
     justify-content: space-between;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════════════ */
 
 ::-webkit-scrollbar {
   width: 10px;
