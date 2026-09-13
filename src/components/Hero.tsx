@@ -4,7 +4,6 @@ import { getHeroConfig } from "@/lib/settings";
 export default async function Hero() {
   const hero = await getHeroConfig();
 
-  // ── divide o título para destacar a parte roxa ────────────
   const { before, highlight, after } = splitTitle(
     hero.title,
     hero.titleHighlight
@@ -13,10 +12,9 @@ export default async function Hero() {
   return (
     <section className="hero-section">
       <div className="container-page hero-content">
-        {/* ── BADGE ─────────────────────────────────────── */}
         {hero.badge && (
           <div
-            className="animate-fade-up hero-badge"
+            className="animate-fade-up"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -46,9 +44,8 @@ export default async function Hero() {
           </div>
         )}
 
-        {/* ── TÍTULO ────────────────────────────────────── */}
         <h1
-          className="animate-fade-up delay-100 hero-title"
+          className="animate-fade-up delay-100"
           style={{
             fontSize: "clamp(34px, 6.5vw, 68px)",
             fontWeight: 800,
@@ -65,10 +62,9 @@ export default async function Hero() {
           {after}
         </h1>
 
-        {/* ── SUBTÍTULO ─────────────────────────────────── */}
         {hero.subtitle && (
           <p
-            className="animate-fade-up delay-200 hero-subtitle"
+            className="animate-fade-up delay-200"
             style={{
               marginTop: "26px",
               fontSize: "17px",
@@ -83,7 +79,6 @@ export default async function Hero() {
           </p>
         )}
 
-        {/* ── BOTÕES ────────────────────────────────────── */}
         <div
           className="animate-fade-up delay-300 hero-buttons"
           style={{
@@ -95,26 +90,19 @@ export default async function Hero() {
           }}
         >
           {hero.button1Text && (
-            <Link
-              href={hero.button1Link}
-              className="btn-primary hero-button"
-            >
+            <Link href={hero.button1Link} className="btn-primary hero-button">
               {hero.button1Text}
               <ArrowRightIcon />
             </Link>
           )}
           {hero.button2Text && (
-            <Link
-              href={hero.button2Link}
-              className="btn-secondary hero-button"
-            >
+            <Link href={hero.button2Link} className="btn-secondary hero-button">
               {hero.button2Text}
             </Link>
           )}
         </div>
       </div>
 
-      {/* ── GLOW DE FUNDO ───────────────────────────────── */}
       <div
         style={{
           position: "absolute",
@@ -166,53 +154,9 @@ export default async function Hero() {
           }}
         />
       </div>
-
-      {/* ── ESTILOS RESPONSIVOS ─────────────────────────── */}
-      <style jsx>{`
-        .hero-section {
-          position: relative;
-          overflow: hidden;
-          padding: 80px 0 100px 0;
-        }
-        .hero-content {
-          text-align: center;
-          max-width: 900px;
-          margin: 0 auto;
-        }
-        .hero-buttons {
-          flex-direction: column;
-          width: 100%;
-        }
-        .hero-button {
-          width: 100%;
-          max-width: 300px;
-        }
-
-        @media (min-width: 640px) {
-          .hero-buttons {
-            flex-direction: row;
-          }
-          .hero-button {
-            width: auto;
-          }
-        }
-
-        @media (min-width: 768px) {
-          .hero-section {
-            padding: 120px 0 140px 0;
-          }
-          .hero-subtitle {
-            font-size: 18px !important;
-          }
-        }
-      `}</style>
     </section>
   );
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   UTILITÁRIO — divide o título em "antes / destaque / depois"
-   ═══════════════════════════════════════════════════════════════ */
 
 function splitTitle(
   full: string,
@@ -228,10 +172,6 @@ function splitTitle(
 
   return { before, highlight, after };
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   ÍCONE
-   ═══════════════════════════════════════════════════════════════ */
 
 function ArrowRightIcon() {
   return (
