@@ -40,7 +40,6 @@ model User {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  // relações
   orders           Order[]
   favorites        Favorite[]
   reviews          Review[]
@@ -75,7 +74,7 @@ model EmailCode {
   id        String   @id @default(cuid())
   userId    String
   code      String
-  type      String   // "signup" | "reset" | "change_email"
+  type      String
   expiresAt DateTime
   usedAt    DateTime?
   attempts  Int      @default(0)
@@ -130,11 +129,11 @@ enum ProductStatus {
 }
 
 enum DeliveryType {
-  AUTOMATIC   // entrega código do estoque automaticamente
-  MANUAL      // admin entrega manualmente
-  FILE        // arquivo para download
-  LINK        // link de acesso
-  CONTENT     // texto/conteúdo pronto
+  AUTOMATIC
+  MANUAL
+  FILE
+  LINK
+  CONTENT
 }
 
 model Product {
@@ -144,34 +143,31 @@ model Product {
   description String        @db.Text
   shortDesc   String?
 
-  price       Decimal       @db.Decimal(10, 2)
-  comparePrice Decimal?     @db.Decimal(10, 2)
+  price        Decimal  @db.Decimal(10, 2)
+  comparePrice Decimal? @db.Decimal(10, 2)
 
-  categoryId  String
-  status      ProductStatus @default(DRAFT)
+  categoryId String
+  status     ProductStatus @default(DRAFT)
 
-  deliveryType DeliveryType @default(AUTOMATIC)
-  deliveryInstructions String? @db.Text
+  deliveryType         DeliveryType @default(AUTOMATIC)
+  deliveryInstructions String?      @db.Text
 
-  stock        Int      @default(0)
-  stockReserved Int     @default(0)
+  stock         Int @default(0)
+  stockReserved Int @default(0)
 
-  // SEO
   seoTitle       String?
   seoDescription String?
 
-  // métricas
-  salesCount   Int @default(0)
-  viewsCount   Int @default(0)
-  ratingAvg    Float @default(0)
-  ratingCount  Int   @default(0)
+  salesCount  Int   @default(0)
+  viewsCount  Int   @default(0)
+  ratingAvg   Float @default(0)
+  ratingCount Int   @default(0)
 
-  featured   Boolean @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // relações
-  category     Category      @relation(fields: [categoryId], references: [id])
+  category     Category       @relation(fields: [categoryId], references: [id])
   images       ProductImage[]
   orderItems   OrderItem[]
   digitalItems DigitalItem[]
@@ -203,38 +199,39 @@ model ProductImage {
 // ═══════════════════════════════════════════════════════════════
 
 enum OrderStatus {
-  PENDING     // criado, aguardando pagamento
-  PAID        // pagamento confirmado
-  DELIVERED   // produto entregue
+  PENDING
+  PAID
+  DELIVERED
   CANCELLED
   REFUNDED
 }
 
 model Order {
-  id            String      @id @default(cuid())
-  orderNumber   String      @unique
-  userId        String
-  status        OrderStatus @default(PENDING)
+  id          String      @id @default(cuid())
+  orderNumber String      @unique
+  userId      String
+  status      OrderStatus @default(PENDING)
 
-  subtotal      Decimal     @db.Decimal(10, 2)
-  discount      Decimal     @default(0) @db.Decimal(10, 2)
-  total         Decimal     @db.Decimal(10, 2)
+  subtotal Decimal @db.Decimal(10, 2)
+  discount Decimal @default(0) @db.Decimal(10, 2)
+  total    Decimal @db.Decimal(10, 2)
 
-  couponId      String?
+  couponId String?
+
   customerEmail String
   customerName  String
   customerPhone String?
 
-  paidAt        DateTime?
-  deliveredAt   DateTime?
-  cancelledAt   DateTime?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  paidAt      DateTime?
+  deliveredAt DateTime?
+  cancelledAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  user     User        @relation(fields: [userId], references: [id])
-  coupon   Coupon?     @relation(fields: [couponId], references: [id])
-  items    OrderItem[]
-  payment  Payment?
+  user            User          @relation(fields: [userId], references: [id])
+  coupon          Coupon?       @relation(fields: [couponId], references: [id])
+  items           OrderItem[]
+  payment         Payment?
   items_delivered DigitalItem[]
 
   @@index([userId])
@@ -268,18 +265,22 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id             String        @id @default(cuid())
-  orderId        String        @unique
-  gateway        String        // "mercadopago"
-  gatewayId      String?       // id do pagamento no MP
-  method         String?       // "pix" | "credit_card" | "boleto"
-  amount         Decimal       @db.Decimal(10, 2)
-  status         PaymentStatus @default(PENDING)
+  id        String @id @default(cuid())
+  orderId   String @unique
+  gateway   String
+  gatewayId String?
+
+  method String?
+
+  amount Decimal       @db.Decimal(10, 2)
+  status PaymentStatus @default(PENDING)
+
   rawPayload     Json?
   webhookPayload Json?
-  approvedAt     DateTime?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+
+  approvedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
@@ -292,23 +293,23 @@ model Payment {
 // ═══════════════════════════════════════════════════════════════
 
 enum DigitalItemStatus {
-  AVAILABLE   // disponível no estoque
-  RESERVED    // reservado por um pedido ainda não pago
-  DELIVERED   // entregue
+  AVAILABLE
+  RESERVED
+  DELIVERED
 }
 
 model DigitalItem {
-  id           String            @id @default(cuid())
-  productId    String
-  content      String            @db.Text   // código, link, chave, etc
-  status       DigitalItemStatus @default(AVAILABLE)
+  id        String            @id @default(cuid())
+  productId String
+  content   String            @db.Text
+  status    DigitalItemStatus @default(AVAILABLE)
 
-  orderId      String?
-  userId       String?
-  deliveredAt  DateTime?
+  orderId     String?
+  userId      String?
+  deliveredAt DateTime?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   order   Order?  @relation(fields: [orderId], references: [id])
@@ -330,20 +331,20 @@ enum DiscountType {
 }
 
 model Coupon {
-  id           String       @id @default(cuid())
-  code         String       @unique
-  discountType DiscountType
-  discountValue Decimal     @db.Decimal(10, 2)
+  id            String       @id @default(cuid())
+  code          String       @unique
+  discountType  DiscountType
+  discountValue Decimal      @db.Decimal(10, 2)
 
-  minPurchase  Decimal?     @db.Decimal(10, 2)
-  maxUses      Int?
-  usedCount    Int          @default(0)
+  minPurchase Decimal? @db.Decimal(10, 2)
+  maxUses     Int?
+  usedCount   Int      @default(0)
 
-  validFrom    DateTime?
-  validUntil   DateTime?
+  validFrom  DateTime?
+  validUntil DateTime?
 
-  active       Boolean      @default(true)
-  createdAt    DateTime     @default(now())
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
 
   usages CouponUsage[]
   orders Order[]
@@ -356,14 +357,17 @@ model CouponUsage {
   id        String   @id @default(cuid())
   couponId  String
   userId    String
+  productId String?
   orderId   String?
   createdAt DateTime @default(now())
 
-  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coupon  Coupon  @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
 
   @@index([couponId])
   @@index([userId])
+  @@index([productId])
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -428,13 +432,13 @@ model Ticket {
 }
 
 model TicketMessage {
-  id        String   @id @default(cuid())
-  ticketId  String
-  authorId  String
-  isAdmin   Boolean  @default(false)
-  message   String   @db.Text
+  id         String   @id @default(cuid())
+  ticketId   String
+  authorId   String
+  isAdmin    Boolean  @default(false)
+  message    String   @db.Text
   attachment String?
-  createdAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
@@ -446,13 +450,13 @@ model TicketMessage {
 // ═══════════════════════════════════════════════════════════════
 
 model Notification {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
   title     String
-  message   String   @db.Text
+  message   String    @db.Text
   link      String?
   readAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -465,44 +469,44 @@ model Notification {
 // ═══════════════════════════════════════════════════════════════
 
 model SiteSettings {
-  id        String   @id @default("main")
-  // identidade
-  siteName  String   @default("Minha Loja Digital")
-  logoUrl   String?
+  id String @id @default("main")
+
+  siteName   String  @default("Minha Loja Digital")
+  logoUrl    String?
   faviconUrl String?
-  // cores (HSL sem hsl(), ex: "262 83% 58%")
-  primaryColor   String @default("262 83% 58%")
-  accentColor    String @default("262 83% 96%")
-  // contato
+
+  primaryColor String @default("262 83% 58%")
+  accentColor  String @default("262 83% 96%")
+
   contactEmail String?
   contactPhone String?
-  // redes
+
   instagram String?
   discord   String?
   whatsapp  String?
-  // seo
+
   seoTitle       String?
   seoDescription String?
-  // comportamentos
+
   animationsEnabled Boolean @default(true)
-  animationsLevel   String  @default("normal") // suave | normal | intensa
-  // rodapé
+  animationsLevel   String  @default("normal")
+
   footerText String?
 
   updatedAt DateTime @updatedAt
 }
 
 model Banner {
-  id         String   @id @default(cuid())
-  title      String?
-  subtitle   String?
+  id           String   @id @default(cuid())
+  title        String?
+  subtitle     String?
   imageDesktop String?
   imageMobile  String?
-  buttonText String?
-  buttonLink String?
-  position   Int      @default(0)
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now())
+  buttonText   String?
+  buttonLink   String?
+  position     Int      @default(0)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
 
   @@index([active])
 }
@@ -521,10 +525,10 @@ model Page {
 
 model HomepageSection {
   id        String   @id @default(cuid())
-  type      String   // "hero" | "categories" | "featured" | "offers" | "bestsellers" | "new" | "howitworks" | "faq" | "cta"
+  type      String
   title     String?
   subtitle  String?
-  content   Json?    // configuração específica da seção
+  content   Json?
   position  Int      @default(0)
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -548,7 +552,7 @@ model FaqItem {
 
 model EmailTemplate {
   id        String   @id @default(cuid())
-  key       String   @unique   // "signup" | "order_paid" | "delivery" etc
+  key       String   @unique
   subject   String
   body      String   @db.Text
   updatedAt DateTime @updatedAt
