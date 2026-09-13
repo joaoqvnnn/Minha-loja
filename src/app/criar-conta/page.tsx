@@ -1,8 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
+const EMAIL_DOMAINS = [
+  "gmail.com",
+  "icloud.com",
+  "outlook.com",
+  "hotmail.com",
+  "yahoo.com",
+  "live.com"
+];
 
 export default function CriarContaPage() {
   const router = useRouter();
@@ -13,37 +22,72 @@ export default function CriarContaPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // ── força da senha ─────────────────────────────────────────
-  function getStrength(pwd: string): {
-    level: 0 | 1 | 2 | 3 | 4;
-    label: string;
-    color: string;
-  } {
-    if (!pwd) return { level: 0, label: "", color: "#e5e5e7" };
+  const strength = useMemo(() => {
+    if (!password) return { level: 0, label: "", color: "#e5e5e7" };
 
     let score = 0;
-    if (pwd.length >= 6) score++;
-    if (pwd.length >= 8) score++;
-    if (/[a-zA-Z]/.test(pwd) && /\d/.test(pwd)) score++;
-    if (/[^a-zA-Z0-9]/.test(pwd) || pwd.length >= 12) score++;
+    if (password.length >= 6) score++;
+    if (password.length >= 8) score++;
+    if (/[a-zA-Z]/.test(password) && /\d/.test(password)) score++;
+    if (/[^a-zA-Z0-9]/.test(password) || password.length >= 12) score++;
 
     if (score <= 1) return { level: 1, label: "Fraca", color: "#ef4444" };
     if (score === 2) return { level: 2, label: "Razoável", color: "#f97316" };
     if (score === 3) return { level: 3, label: "Boa", color: "#eab308" };
     return { level: 4, label: "Forte", color: "#22c55e" };
+  }, [password]);
+
+  // ── nome válido? (2+ palavras) ────────────────────────────
+  const nameValid =
+    name.trim().split(/\s+/).length >= 2 && /^[a-zA-ZÀ-ÿ\s'-]+$/.test(name);
+
+  // ── sugestões de domínio ──────────────────────────────────
+  const emailSuggestions = useMemo(() => {
+    if (!email) return [];
+    const atIndex = email.indexOf("@");
+    if (atIndex === -1) return [];
+
+    const local = email.slice(0, atIndex);
+    const typedDomain = email.slice(atIndex + 1).toLowerCase();
+    if (!local) return [];
+
+    // se já tem domínio completo (com ponto), não sugere
+    if (typedDomain.includes(".") && typedDomain.length > 3) return [];
+
+    return EMAIL_DOMAINS.filter((d) => d.startsWith(typedDomain)).slice(0, 4);
+  }, [email]);
+
+  // ── máscara de telefone ───────────────────────────────────
+  function formatPhone(value: string): string {
+    const digits = value.replace(/\D/g, "").slice(0, 11);
+
+    if (digits.length === 0) return "";
+    if (digits.length <= 2) return `(${digits}`;
+    if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10)
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
   }
 
-  const strength = getStrength(password);
+  function handlePhoneChange(value: string) {
+    setPhone(formatPhone(value));
+  }
 
-  // ── submissão ──────────────────────────────────────────────
+  // ── submissão ─────────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
+    if (!nameValid) {
+      setError("Digite nome e sobrenome");
+      return;
+    }
     if (password !== confirm) {
       setError("As senhas não coincidem");
       return;
@@ -56,8 +100,8 @@ export default function CriarContaPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
-          email,
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
           phone: phone.replace(/\D/g, ""),
           password,
           confirmPassword: confirm
@@ -71,8 +115,7 @@ export default function CriarContaPage() {
         return;
       }
 
-      // Sucesso — vai pra tela de verificação
-      router.push(`/verificar?email=${encodeURIComponent(email)}`);
+      router.push(`/verificar?email=${encodeURIComponent(email.trim().toLowerCase())}`);
     } catch {
       setError("Erro de conexão. Tente novamente.");
     } finally {
@@ -89,17 +132,38 @@ export default function CriarContaPage() {
         justifyContent: "center",
         padding: "32px 16px",
         background:
-          "linear-gradient(180deg, #fafafa 0%, #ffffff 50%, #f4f0ff 100%)"
+          "radial-gradient(ellipse at top, rgba(124,58,237,0.08) 0%, #fafafa 40%, #ffffff 100%)",
+        position: "relative",
+        overflow: "hidden"
       }}
     >
-      <div style={{ width: "100%", maxWidth: "440px" }}>
+      {/* glow decorativo */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-100px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "600px",
+          height: "400px",
+          background:
+            "radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)",
+          filter: "blur(60px)",
+          pointerEvents: "none"
+        }}
+      />
+
+      <div
+        className="animate-fade-up"
+        style={{ width: "100%", maxWidth: "460px", position: "relative" }}
+      >
         {/* logo */}
         <Link
           href="/"
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
+            gap: "10px",
             justifyContent: "center",
             textDecoration: "none",
             marginBottom: "32px"
@@ -107,36 +171,44 @@ export default function CriarContaPage() {
         >
           <div
             style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "8px",
-              background: "#7c3aed"
+              width: "34px",
+              height: "34px",
+              borderRadius: "10px",
+              background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+              boxShadow: "0 4px 12px rgba(124,58,237,0.25)"
             }}
           />
           <span
-            style={{ fontSize: "18px", fontWeight: 600, color: "#18181b" }}
+            style={{
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "#18181b",
+              letterSpacing: "-0.02em"
+            }}
           >
-            Minha Loja
+            Fofoca Store
           </span>
         </Link>
 
         {/* card */}
         <div
+          className="animate-scale-in"
           style={{
             background: "#ffffff",
             border: "1px solid #e5e5e7",
-            borderRadius: "16px",
-            padding: "32px 24px",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
+            borderRadius: "20px",
+            padding: "36px 28px",
+            boxShadow:
+              "0 1px 3px rgba(0,0,0,0.04), 0 12px 32px rgba(124,58,237,0.06)"
           }}
         >
           <h1
             style={{
-              fontSize: "24px",
-              fontWeight: 700,
+              fontSize: "26px",
+              fontWeight: 800,
               color: "#18181b",
               margin: "0 0 8px 0",
-              letterSpacing: "-0.02em"
+              letterSpacing: "-0.025em"
             }}
           >
             Criar sua conta
@@ -145,7 +217,7 @@ export default function CriarContaPage() {
             style={{
               fontSize: "14px",
               color: "#71717a",
-              margin: "0 0 24px 0"
+              margin: "0 0 28px 0"
             }}
           >
             Leva menos de 1 minuto.
@@ -179,43 +251,113 @@ export default function CriarContaPage() {
             <div style={{ flex: 1, height: 1, background: "#e5e5e7" }} />
           </div>
 
-          {/* formulário */}
           <form
             onSubmit={handleSubmit}
-            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+            style={{ display: "flex", flexDirection: "column", gap: "18px" }}
           >
-            <Field label="Nome completo">
+            <Field
+              label="Nome completo"
+              hint={name && !nameValid ? "Digite nome e sobrenome" : undefined}
+            >
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="João Silva"
                 required
-                style={inputStyle}
+                autoComplete="name"
+                className="input-base"
+                style={{
+                  borderColor:
+                    name && !nameValid ? "#ef4444" : undefined
+                }}
               />
             </Field>
 
             <Field label="E-mail">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="voce@email.com"
-                required
-                autoComplete="email"
-                style={inputStyle}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onFocus={() => setEmailFocused(true)}
+                  onBlur={() => setTimeout(() => setEmailFocused(false), 150)}
+                  placeholder="voce@email.com"
+                  required
+                  autoComplete="email"
+                  className="input-base"
+                />
+
+                {/* sugestões de domínio */}
+                {emailFocused && emailSuggestions.length > 0 && (
+                  <div
+                    className="animate-fade-in"
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 6px)",
+                      left: 0,
+                      right: 0,
+                      background: "#ffffff",
+                      border: "1px solid #e5e5e7",
+                      borderRadius: "12px",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                      padding: "6px",
+                      zIndex: 10,
+                      overflow: "hidden"
+                    }}
+                  >
+                    {emailSuggestions.map((domain) => {
+                      const local = email.split("@")[0];
+                      const fullEmail = `${local}@${domain}`;
+                      return (
+                        <button
+                          key={domain}
+                          type="button"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setEmail(fullEmail);
+                            setEmailFocused(false);
+                          }}
+                          style={{
+                            display: "block",
+                            width: "100%",
+                            textAlign: "left",
+                            background: "transparent",
+                            border: "none",
+                            padding: "10px 12px",
+                            borderRadius: "8px",
+                            fontSize: "14px",
+                            color: "#18181b",
+                            cursor: "pointer",
+                            fontFamily: "inherit",
+                            transition: "background 0.15s ease"
+                          }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.background = "#f4f4f5")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.background = "transparent")
+                          }
+                        >
+                          {fullEmail}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </Field>
 
             <Field label="Telefone">
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => handlePhoneChange(e.target.value)}
                 placeholder="(11) 99999-9999"
                 required
                 autoComplete="tel"
-                style={inputStyle}
+                inputMode="numeric"
+                className="input-base"
               />
             </Field>
 
@@ -228,7 +370,8 @@ export default function CriarContaPage() {
                   placeholder="Mínimo 8 caracteres"
                   required
                   autoComplete="new-password"
-                  style={{ ...inputStyle, paddingRight: "44px" }}
+                  className="input-base"
+                  style={{ paddingRight: "46px" }}
                 />
                 <button
                   type="button"
@@ -236,24 +379,25 @@ export default function CriarContaPage() {
                   aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                   style={{
                     position: "absolute",
-                    right: "10px",
+                    right: "12px",
                     top: "50%",
                     transform: "translateY(-50%)",
                     background: "transparent",
                     border: "none",
                     cursor: "pointer",
-                    padding: "6px",
-                    fontSize: "16px",
-                    color: "#71717a"
+                    padding: "4px",
+                    color: "#71717a",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
                   }}
                 >
-                  {showPassword ? "🙈" : "👁"}
+                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 </button>
               </div>
 
-              {/* barra de força */}
               {password && (
-                <div style={{ marginTop: "8px" }}>
+                <div style={{ marginTop: "10px" }}>
                   <div
                     style={{
                       display: "flex",
@@ -270,7 +414,7 @@ export default function CriarContaPage() {
                           borderRadius: "999px",
                           background:
                             n <= strength.level ? strength.color : "#e5e5e7",
-                          transition: "background 0.2s ease"
+                          transition: "background 0.25s ease"
                         }}
                       />
                     ))}
@@ -279,7 +423,7 @@ export default function CriarContaPage() {
                     style={{
                       fontSize: "12px",
                       color: strength.color,
-                      fontWeight: 500
+                      fontWeight: 600
                     }}
                   >
                     Senha {strength.label}
@@ -288,7 +432,14 @@ export default function CriarContaPage() {
               )}
             </Field>
 
-            <Field label="Confirmar senha">
+            <Field
+              label="Confirmar senha"
+              hint={
+                confirm && confirm !== password
+                  ? "As senhas não coincidem"
+                  : undefined
+              }
+            >
               <input
                 type={showPassword ? "text" : "password"}
                 value={confirm}
@@ -296,35 +447,24 @@ export default function CriarContaPage() {
                 placeholder="Repita a senha"
                 required
                 autoComplete="new-password"
+                className="input-base"
                 style={{
-                  ...inputStyle,
                   borderColor:
-                    confirm && confirm !== password ? "#ef4444" : "#e5e5e7"
+                    confirm && confirm !== password ? "#ef4444" : undefined
                 }}
               />
-              {confirm && confirm !== password && (
-                <span
-                  style={{
-                    fontSize: "12px",
-                    color: "#ef4444",
-                    marginTop: "4px",
-                    display: "block"
-                  }}
-                >
-                  As senhas não coincidem
-                </span>
-              )}
             </Field>
 
             {error && (
               <div
+                className="animate-fade-in"
                 style={{
                   background: "#fef2f2",
                   border: "1px solid #fecaca",
                   color: "#b91c1c",
-                  fontSize: "13px",
-                  padding: "10px 12px",
-                  borderRadius: "8px"
+                  fontSize: "13.5px",
+                  padding: "11px 14px",
+                  borderRadius: "10px"
                 }}
               >
                 {error}
@@ -334,17 +474,23 @@ export default function CriarContaPage() {
             <button
               type="submit"
               disabled={loading}
+              className="hover-lift"
               style={{
-                background: loading ? "#a78bfa" : "#7c3aed",
+                background: loading
+                  ? "#a78bfa"
+                  : "linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)",
                 color: "#ffffff",
                 border: "none",
-                padding: "14px 24px",
-                borderRadius: "10px",
-                fontSize: "15px",
+                padding: "15px 24px",
+                borderRadius: "12px",
+                fontSize: "15.5px",
                 fontWeight: 600,
                 cursor: loading ? "not-allowed" : "pointer",
-                marginTop: "8px",
-                transition: "background 0.2s ease"
+                marginTop: "4px",
+                fontFamily: "inherit",
+                boxShadow: loading
+                  ? "none"
+                  : "0 6px 18px rgba(124,58,237,0.28)"
               }}
             >
               {loading ? "Criando conta..." : "Criar conta"}
@@ -353,7 +499,7 @@ export default function CriarContaPage() {
 
           <p
             style={{
-              fontSize: "13px",
+              fontSize: "13.5px",
               color: "#71717a",
               textAlign: "center",
               marginTop: "24px",
@@ -378,28 +524,17 @@ export default function CriarContaPage() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// componentes auxiliares
-// ─────────────────────────────────────────────────────────────
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "12px 14px",
-  border: "1px solid #e5e5e7",
-  borderRadius: "10px",
-  fontSize: "15px",
-  color: "#18181b",
-  background: "#ffffff",
-  outline: "none",
-  boxSizing: "border-box",
-  fontFamily: "inherit"
-};
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENTES AUXILIARES
+   ═══════════════════════════════════════════════════════════════ */
 
 function Field({
   label,
+  hint,
   children
 }: {
   label: string;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -408,7 +543,7 @@ function Field({
         style={{
           display: "block",
           fontSize: "13px",
-          fontWeight: 500,
+          fontWeight: 600,
           color: "#3f3f46",
           marginBottom: "6px"
         }}
@@ -416,6 +551,19 @@ function Field({
         {label}
       </span>
       {children}
+      {hint && (
+        <span
+          style={{
+            display: "block",
+            fontSize: "12px",
+            color: "#ef4444",
+            marginTop: "5px",
+            fontWeight: 500
+          }}
+        >
+          {hint}
+        </span>
+      )}
     </label>
   );
 }
@@ -433,6 +581,7 @@ function SocialButton({
     <button
       type="button"
       onClick={onClick}
+      className="hover-lift"
       style={{
         display: "flex",
         alignItems: "center",
@@ -440,10 +589,10 @@ function SocialButton({
         gap: "10px",
         background: "#ffffff",
         border: "1px solid #e5e5e7",
-        borderRadius: "10px",
-        padding: "12px 16px",
+        borderRadius: "11px",
+        padding: "13px 16px",
         fontSize: "14px",
-        fontWeight: 500,
+        fontWeight: 600,
         color: "#18181b",
         cursor: "pointer",
         fontFamily: "inherit"
@@ -452,6 +601,48 @@ function SocialButton({
       {icon}
       {label}
     </button>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ÍCONES SVG
+   ═══════════════════════════════════════════════════════════════ */
+
+function EyeIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+      <line x1="2" y1="2" x2="22" y2="22" />
+    </svg>
   );
 }
 
