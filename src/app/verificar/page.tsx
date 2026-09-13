@@ -17,12 +17,10 @@ function VerificarContent() {
 
   const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
-  // foca o primeiro campo ao entrar
   useEffect(() => {
     inputRefs.current[0]?.focus();
   }, []);
 
-  // cooldown de reenvio
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
@@ -39,7 +37,6 @@ function VerificarContent() {
       inputRefs.current[index + 1]?.focus();
     }
 
-    // se preencheu tudo, envia automático
     if (clean && next.every((d) => d)) {
       submit(next.join(""));
     }
@@ -85,7 +82,7 @@ function VerificarContent() {
       }
 
       setSuccess(true);
-      setTimeout(() => router.push("/entrar"), 1500);
+      setTimeout(() => router.push("/entrar"), 1800);
     } catch {
       setError("Erro de conexão. Tente novamente.");
     } finally {
@@ -114,6 +111,7 @@ function VerificarContent() {
     }
   }
 
+  /* ═══ TELA DE SUCESSO ═══════════════════════════════ */
   if (success) {
     return (
       <main
@@ -124,36 +122,49 @@ function VerificarContent() {
           justifyContent: "center",
           padding: "32px 16px",
           background:
-            "linear-gradient(180deg, #fafafa 0%, #ffffff 50%, #f4f0ff 100%)"
+            "radial-gradient(ellipse at top, rgba(34,197,94,0.10) 0%, #fafafa 40%, #ffffff 100%)"
         }}
       >
-        <div style={{ textAlign: "center" }}>
+        <div
+          className="animate-scale-in"
+          style={{ textAlign: "center", maxWidth: "380px" }}
+        >
           <div
+            className="animate-fade-in"
             style={{
-              width: "64px",
-              height: "64px",
+              width: "72px",
+              height: "72px",
               borderRadius: "999px",
-              background: "#dcfce7",
+              background: "linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              margin: "0 auto 20px auto",
-              fontSize: "32px"
+              margin: "0 auto 24px auto",
+              color: "#16a34a",
+              boxShadow: "0 8px 24px rgba(34,197,94,0.2)"
             }}
           >
-            ✅
+            <CheckIcon />
           </div>
           <h1
             style={{
-              fontSize: "22px",
-              fontWeight: 700,
+              fontSize: "26px",
+              fontWeight: 800,
               color: "#18181b",
-              margin: "0 0 8px 0"
+              margin: "0 0 10px 0",
+              letterSpacing: "-0.02em"
             }}
           >
-            Conta confirmada!
+            Conta confirmada
           </h1>
-          <p style={{ fontSize: "14px", color: "#71717a", margin: 0 }}>
+          <p
+            style={{
+              fontSize: "15px",
+              color: "#71717a",
+              margin: 0,
+              lineHeight: 1.6
+            }}
+          >
             Redirecionando para o login...
           </p>
         </div>
@@ -161,6 +172,7 @@ function VerificarContent() {
     );
   }
 
+  /* ═══ TELA DE VERIFICAÇÃO ═══════════════════════════ */
   return (
     <main
       style={{
@@ -170,16 +182,38 @@ function VerificarContent() {
         justifyContent: "center",
         padding: "32px 16px",
         background:
-          "linear-gradient(180deg, #fafafa 0%, #ffffff 50%, #f4f0ff 100%)"
+          "radial-gradient(ellipse at top, rgba(124,58,237,0.08) 0%, #fafafa 40%, #ffffff 100%)",
+        position: "relative",
+        overflow: "hidden"
       }}
     >
-      <div style={{ width: "100%", maxWidth: "440px" }}>
+      {/* glow decorativo */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-100px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "600px",
+          height: "400px",
+          background:
+            "radial-gradient(ellipse, rgba(124,58,237,0.15) 0%, transparent 70%)",
+          filter: "blur(60px)",
+          pointerEvents: "none"
+        }}
+      />
+
+      <div
+        className="animate-fade-up"
+        style={{ width: "100%", maxWidth: "460px", position: "relative" }}
+      >
+        {/* logo */}
         <Link
           href="/"
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
+            gap: "10px",
             justifyContent: "center",
             textDecoration: "none",
             marginBottom: "32px"
@@ -187,65 +221,76 @@ function VerificarContent() {
         >
           <div
             style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "8px",
-              background: "#7c3aed"
+              width: "34px",
+              height: "34px",
+              borderRadius: "10px",
+              background: "linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)",
+              boxShadow: "0 4px 12px rgba(124,58,237,0.25)"
             }}
           />
           <span
-            style={{ fontSize: "18px", fontWeight: 600, color: "#18181b" }}
+            style={{
+              fontSize: "18px",
+              fontWeight: 700,
+              color: "#18181b",
+              letterSpacing: "-0.02em"
+            }}
           >
-            Minha Loja
+            Fofoca Store
           </span>
         </Link>
 
         <div
+          className="animate-scale-in"
           style={{
             background: "#ffffff",
             border: "1px solid #e5e5e7",
-            borderRadius: "16px",
-            padding: "32px 24px",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04)"
+            borderRadius: "20px",
+            padding: "36px 28px",
+            boxShadow:
+              "0 1px 3px rgba(0,0,0,0.04), 0 12px 32px rgba(124,58,237,0.06)"
           }}
         >
+          {/* ícone envelope */}
           <div
             style={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "12px",
-              background: "#ede9fe",
+              width: "56px",
+              height: "56px",
+              borderRadius: "14px",
+              background: "linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: "20px",
-              fontSize: "24px"
+              marginBottom: "22px",
+              color: "#7c3aed"
             }}
           >
-            📧
+            <MailIcon />
           </div>
 
           <h1
             style={{
-              fontSize: "22px",
-              fontWeight: 700,
+              fontSize: "24px",
+              fontWeight: 800,
               color: "#18181b",
-              margin: "0 0 8px 0",
-              letterSpacing: "-0.02em"
+              margin: "0 0 10px 0",
+              letterSpacing: "-0.025em"
             }}
           >
             Verifique seu e-mail
           </h1>
           <p
             style={{
-              fontSize: "14px",
+              fontSize: "14.5px",
               color: "#71717a",
-              margin: "0 0 28px 0",
-              lineHeight: 1.5
+              margin: "0 0 32px 0",
+              lineHeight: 1.55
             }}
           >
             Enviamos um código de 6 dígitos para{" "}
-            <strong style={{ color: "#18181b" }}>{email || "seu e-mail"}</strong>
+            <strong style={{ color: "#18181b", fontWeight: 600 }}>
+              {email || "seu e-mail"}
+            </strong>
           </p>
 
           {/* caixas de dígitos */}
@@ -254,7 +299,7 @@ function VerificarContent() {
               display: "flex",
               gap: "8px",
               justifyContent: "center",
-              marginBottom: "20px"
+              marginBottom: "24px"
             }}
           >
             {digits.map((digit, i) => (
@@ -273,18 +318,23 @@ function VerificarContent() {
                 disabled={loading}
                 style={{
                   width: "48px",
-                  height: "56px",
+                  height: "58px",
                   textAlign: "center",
                   fontSize: "22px",
-                  fontWeight: 600,
+                  fontWeight: 700,
                   color: "#18181b",
-                  background: "#ffffff",
-                  border: digit ? "2px solid #7c3aed" : "1px solid #e5e5e7",
-                  borderRadius: "10px",
+                  background: digit ? "#faf5ff" : "#ffffff",
+                  border: digit
+                    ? "2px solid #7c3aed"
+                    : "1.5px solid #e5e5e7",
+                  borderRadius: "12px",
                   outline: "none",
-                  fontFamily: "monospace",
+                  fontFamily: "ui-monospace, monospace",
                   boxSizing: "border-box",
-                  transition: "border 0.15s ease"
+                  transition: "all 0.15s ease",
+                  boxShadow: digit
+                    ? "0 0 0 3px rgba(124,58,237,0.10)"
+                    : "none"
                 }}
               />
             ))}
@@ -292,13 +342,14 @@ function VerificarContent() {
 
           {error && (
             <div
+              className="animate-fade-in"
               style={{
                 background: "#fef2f2",
                 border: "1px solid #fecaca",
                 color: "#b91c1c",
-                fontSize: "13px",
-                padding: "10px 12px",
-                borderRadius: "8px",
+                fontSize: "13.5px",
+                padding: "11px 14px",
+                borderRadius: "10px",
                 marginBottom: "16px",
                 textAlign: "center"
               }}
@@ -311,19 +362,27 @@ function VerificarContent() {
             type="button"
             onClick={() => submit(digits.join(""))}
             disabled={loading || digits.some((d) => !d)}
+            className="hover-lift"
             style={{
               width: "100%",
               background:
-                loading || digits.some((d) => !d) ? "#a78bfa" : "#7c3aed",
+                loading || digits.some((d) => !d)
+                  ? "#a78bfa"
+                  : "linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)",
               color: "#ffffff",
               border: "none",
-              padding: "14px 24px",
-              borderRadius: "10px",
-              fontSize: "15px",
+              padding: "15px 24px",
+              borderRadius: "12px",
+              fontSize: "15.5px",
               fontWeight: 600,
               cursor:
                 loading || digits.some((d) => !d) ? "not-allowed" : "pointer",
-              transition: "background 0.2s ease"
+              transition: "background 0.2s ease",
+              fontFamily: "inherit",
+              boxShadow:
+                loading || digits.some((d) => !d)
+                  ? "none"
+                  : "0 6px 18px rgba(124,58,237,0.28)"
             }}
           >
             {loading ? "Verificando..." : "Confirmar"}
@@ -331,15 +390,23 @@ function VerificarContent() {
 
           <div
             style={{
-              marginTop: "20px",
+              marginTop: "22px",
               textAlign: "center",
-              fontSize: "13px",
+              fontSize: "13.5px",
               color: "#71717a"
             }}
           >
             Não recebeu?{" "}
             {resendCooldown > 0 ? (
-              <span style={{ color: "#a1a1aa" }}>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  color: "#a1a1aa",
+                  fontWeight: 500
+                }}
+              >
                 Reenviar em {resendCooldown}s
               </span>
             ) : (
@@ -353,7 +420,7 @@ function VerificarContent() {
                   fontWeight: 600,
                   cursor: "pointer",
                   padding: 0,
-                  fontSize: "13px",
+                  fontSize: "13.5px",
                   fontFamily: "inherit"
                 }}
               >
@@ -372,5 +439,44 @@ export default function VerificarPage() {
     <Suspense fallback={null}>
       <VerificarContent />
     </Suspense>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ÍCONES SVG
+   ═══════════════════════════════════════════════════════════════ */
+
+function MailIcon() {
+  return (
+    <svg
+      width="26"
+      height="26"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
   );
 }
