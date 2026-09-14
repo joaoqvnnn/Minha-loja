@@ -1,86 +1,46 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 const FROM_NAME = process.env.SMTP_FROM_NAME || "Fofoca Store";
-const FROM_EMAIL = process.env.SMTP_FROM || process.env.SMTP_USER;
-const FROM = `"${FROM_NAME}" <${FROM_EMAIL}>`;
+const FROM_EMAIL = process.env.SMTP_FROM || "onboarding@resend.dev";
+const FROM = `${FROM_NAME} <${FROM_EMAIL}>`;
 
-// ═══════════════════════════════════════════════════════════════
-// CRIA O TRANSPORTER
-// Usa porta 465 com SSL (mais confiável no Render que 587)
-// ═══════════════════════════════════════════════════════════════
+let resendClient: Resend | null = null;
 
-function createTransporter() {
-  const port = Number(process.env.SMTP_PORT || 465);
-  const useSSL = port === 465;
-
-  console.log("[email] Criando transporter:");
-  console.log("  host:", process.env.SMTP_HOST);
-  console.log("  port:", port);
-  console.log("  secure:", useSSL);
-  console.log("  user:", process.env.SMTP_USER);
-  console.log(
-    "  pass length:",
-    process.env.SMTP_PASS ? process.env.SMTP_PASS.length : 0
-  );
-  console.log(
-    "  pass tem espaço:",
-    process.env.SMTP_PASS?.includes(" ") ? "SIM" : "NÃO"
-  );
-
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port,
-    secure: useSSL,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
-    tls: {
-      rejectUnauthorized: false
+function getResend(): Resend {
+  if (!resendClient) {
+    const key = process.env.RESEND_API_KEY;
+    if (!key) {
+      throw new Error("RESEND_API_KEY não configurada");
     }
-  });
+    console.log("[email] Criando cliente Resend");
+    console.log("  key prefix:", key.slice(0, 8) + "...");
+    resendClient = new Resend(key);
+  }
+  return resendClient;
 }
-
-// ═══════════════════════════════════════════════════════════════
-// DIAGNÓSTICO
-// ═══════════════════════════════════════════════════════════════
 
 export function checkEmailConfig() {
   return {
-    SMTP_HOST: process.env.SMTP_HOST || "FALTANDO",
-    SMTP_PORT: process.env.SMTP_PORT || "FALTANDO",
-    SMTP_USER: process.env.SMTP_USER || "FALTANDO",
-    SMTP_PASS: process.env.SMTP_PASS
-      ? `ok (${process.env.SMTP_PASS.length} caracteres)`
+    RESEND_API_KEY: process.env.RESEND_API_KEY
+      ? `ok (${process.env.RESEND_API_KEY.length} caracteres)`
       : "FALTANDO",
-    SMTP_PASS_tem_espaco: process.env.SMTP_PASS?.includes(" ") ? "SIM" : "NÃO",
     SMTP_FROM: process.env.SMTP_FROM || "FALTANDO",
     SMTP_FROM_NAME: process.env.SMTP_FROM_NAME || "FALTANDO"
   };
 }
-
-// ═══════════════════════════════════════════════════════════════
-// ENVIO DE CÓDIGO
-// ═══════════════════════════════════════════════════════════════
 
 export async function sendVerificationCode(
   to: string,
   name: string,
   code: string
 ): Promise<void> {
-  const transporter = createTransporter();
+  const resend = getResend();
 
-  console.log("[email] Verificando conexão com o Gmail...");
-  await transporter.verify();
-  console.log("[email] ✅ Conexão verificada com sucesso");
+  console.log(`[email] Enviando código para ${to}...`);
 
-  console.log(`[email] Enviando código ${code} para ${to}...`);
-  const info = await transporter.sendMail({
+  const { data, error } = await resend.emails.send({
     from: FROM,
-    to,
+    to: [to],
     subject: "Seu código de verificação — Fofoca Store",
     html: `
       <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px;">
@@ -102,30 +62,25 @@ export async function sendVerificationCode(
     `
   });
 
-  console.log("[email] ✅ E-mail enviado!");
-  console.log("  messageId:", info.messageId);
-  console.log("  accepted:", info.accepted);
-  console.log("  rejected:", info.rejected);
-  console.log("  response:", info.response);
-}
+  if (error) {
+    console.error("[email] ❌ Resend retornou erro:", error);
+    throw new Error(error.message || "Erro ao enviar e-mail");
+  }
 
-// ═══════════════════════════════════════════════════════════════
-// ENVIO DE RESET DE SENHA
-// ═══════════════════════════════════════════════════════════════
+  console.log("[email] ✅ E-mail enviado! ID:", data?.id);
+}
 
 export async function sendPasswordReset(
   to: string,
   name: string,
   resetLink: string
 ): Promise<void> {
-  const transporter = createTransporter();
+  const resend = getResend();
 
-  await transporter.verify();
-
-  await transporter.sendMail({
+  const { data, error } = await resend.emails.send({
     from: FROM,
-    to,
-    subject: "Recuperação de senha",
+    to: [to],
+    subject: "Recuperação de senha — Fofoca Store",
     html: `
       <div style="font-family: system-ui, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px;">
         <h1 style="font-size: 22px; font-weight: 700; color: #18181b; margin: 0 0 16px 0;">
@@ -143,4 +98,11 @@ export async function sendPasswordReset(
       </div>
     `
   });
+
+  if (error) {
+    console.error("[email] ❌ Resend retornou erro:", error);
+    throw new Error(error.message || "Erro ao enviar e-mail");
+  }
+
+  console.log("[email] ✅ Reset enviado! ID:", data?.id);
 }
